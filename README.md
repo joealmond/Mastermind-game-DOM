@@ -2,6 +2,9 @@
 
 Todo:
 
+- reset gomb
+- lehetőségek számának kiírása
+
 Tervek:
 
 - kód egyszerűsítés
