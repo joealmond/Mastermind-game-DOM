@@ -4,6 +4,7 @@ Todo:
 
 - reset gomb
 - lehetőségek számának kiírása
+- a végén kiírni a megoldást
 
 Tervek:
 

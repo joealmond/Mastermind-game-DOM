@@ -3,6 +3,19 @@
 const TURNS = 10;
 let actualTurns = TURNS;
 const secretCode = generateSecret();
+// const rowHeader = 1;
+const counterObj = {
+  counter: 1,
+  add: function (increment = 1) {
+    this.counter = this.counter + increment;
+    return this.counter;
+  },
+};
+
+// const digitsQuantity = 4;
+// const dispalyDigits = 2;
+// let tdActualCounter = 1;
+// let guessDigit;
 
 const inputForm = document.getElementById("inputForm");
 const inputField = document.getElementById("inputField");
@@ -35,17 +48,80 @@ function readGuess() {
   return guess.split("");
 }
 
+function writeGuess(guess) {
+  function getRedCount(guess) {
+    // Összeveti mely számjegyek vannak a helyén és visszaadja a találatok összegét.
+    let redCount = 0;
+    let i;
+    for (i = 0; i < 4; i++) {
+      if (secretCode[i] === guess[i]) {
+        redCount = redCount + 1;
+      }
+    }
+    return redCount;
+  }
+
+  function getWhiteCount(guess) {
+    // Összevet hogy vannak-e olyan számok amelyek nincsenek a helyükön de előfordulnak.
+    // Minden számjegy csak egyszer szerepelhet, miközben a helyükön lévő számjegyek nem szerepelhetnek.
+    let whiteCount = 0;
+    let whiteCountHelper = new Set(); // egy halmazban tárolom átmenetileg az eredmény számokat.
+    let secretCodeHelper = secretCode.slice(); // a stringet tömb objektummá alakítom és mivel így már referencia érték ezét készítek egy másolatot, hogy az eredei érték ne módosuljon.
+    let guessHelper = guess.slice(); // a stringet tömb objektummá alakítom és mivel így már referencia érték ezét készítek egy másolatot, hogy az eredeti érték ne módosuljon.
+    let i, j;
+    for (i = 0; i < secretCodeHelper.length; ++i) {
+      // az egyásba ágyazott ciklusok gondoskodnak aról hogy a két tömb minden eleme össz elegyen vetve egymással.
+      if (i === j && secretCodeHelper[i] == guessHelper[j]) {
+        // ha találok helyi értéken egyezést akkor azt kiveszem a tömbökből.
+        secretCodeHelper.splice(i, 1);
+        guessHelper.splice(j, 1);
+        if (i >= 0) {
+          // mivel kivettem egy elemt a tömbökből az rövidebb lett, ezt kompenzálni kell vigyázva arra hogy az érték ne legyen negatív szám.
+          i = i - 1;
+        }
+      } else if (secretCodeHelper[i] === guessHelper[j]) {
+        whiteCountHelper.add(guess[j]);
+      }
+      for (j = 0; j < guessHelper.length; ++j) {
+        if (i === j && secretCodeHelper[i] == guessHelper[j]) {
+          secretCodeHelper.splice(i, 1);
+          guessHelper.splice(j, 1);
+          if (j >= 0) {
+            j = j - 1;
+          }
+        } else if (secretCodeHelper[i] === guessHelper[j]) {
+          whiteCountHelper.add(guess[j]);
+        }
+      }
+    }
+
+    whiteCount = whiteCountHelper.size; // megnézem az eredményhalmaz méretét majd visszadom azt
+    return whiteCount;
+  }
+
+  const tdActual = document.querySelectorAll("td");
+  for (let i = 0; i < guess.length; i++) {
+    tdActual[counterObj.counter].textContent = guess[i];
+    counterObj.add();
+  }
+  tdActual[counterObj.counter].textContent = getRedCount(guess);
+  counterObj.add();
+  tdActual[counterObj.counter].textContent = getWhiteCount(guess);
+  counterObj.add(2);
+}
+
 // Main program:
 
-// console.log(
-//   "Titkos kód: " + secretCode + "    ...Tesztelési célokra megjelenítve..."
-// );
+console.log("Titkos kód: " + secretCode);
 
 inputForm.addEventListener(
   "submit",
   function (evt) {
     evt.preventDefault();
-    return console.log(readGuess());
+    let guess = readGuess();
+    if (guess !== undefined) {
+      writeGuess(guess);
+    }
   },
   false
 );
