@@ -12,6 +12,13 @@ const counterObj = {
   },
 };
 
+const gameStatus = {
+  isGameWon: false,
+  checkIfWon: function () {
+    if (this.isGameWon === true) return this.isGameWon;
+  },
+};
+
 // const digitsQuantity = 4;
 // const dispalyDigits = 2;
 // let tdActualCounter = 1;
@@ -19,6 +26,8 @@ const counterObj = {
 
 const inputForm = document.getElementById("inputForm");
 const inputField = document.getElementById("inputField");
+const gameStatusDisplay = document.getElementById("gameStatus");
+const gameRestart = document.getElementById("restart");
 
 // Function declarations:
 
@@ -100,19 +109,29 @@ function writeGuess(guess) {
   }
 
   const tdActual = document.querySelectorAll("td");
-  for (let i = 0; i < guess.length; i++) {
-    tdActual[counterObj.counter].textContent = guess[i];
+  if (tdActual[counterObj.counter] !== undefined) {
+    for (let i = 0; i < guess.length; i++) {
+      tdActual[counterObj.counter].textContent = guess[i];
+      counterObj.add();
+    }
+    let redCount = getRedCount(guess);
+    tdActual[counterObj.counter].textContent = redCount;
     counterObj.add();
+    tdActual[counterObj.counter].textContent = getWhiteCount(guess);
+    counterObj.add(2);
+    if (redCount === 4) gameStatus.isGameWon = true;
+  } else {
+    gameStatusDisplay.textContent = `Nem nyertél! A titkos kód ${secretCode
+      .toString()
+      .split(",")
+      .join("")} volt.`;
+    document.getElementById("inputField").setAttribute("disabled", "");
   }
-  tdActual[counterObj.counter].textContent = getRedCount(guess);
-  counterObj.add();
-  tdActual[counterObj.counter].textContent = getWhiteCount(guess);
-  counterObj.add(2);
 }
 
 // Main program:
 
-console.log("Titkos kód: " + secretCode);
+console.log("Titkos kód: " + secretCode.toString().split(",").join(""));
 
 inputForm.addEventListener(
   "submit",
@@ -122,6 +141,16 @@ inputForm.addEventListener(
     if (guess !== undefined) {
       writeGuess(guess);
     }
+    if (gameStatus.isGameWon === true) {
+      gameStatusDisplay.textContent = `Nyertél! A titkos kód valóban ${secretCode
+        .toString()
+        .split(",")
+        .join("")} volt.`;
+    }
   },
   false
 );
+
+gameRestart.addEventListener("click", (evt) => {
+  location.reload(evt);
+});

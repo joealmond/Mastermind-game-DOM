@@ -2,14 +2,11 @@
 
 Todo:
 
-- reset gomb
-- lehetőségek számának kiírása
-- a végén kiírni a megoldást
+- kommentelés
 
 Tervek:
 
 - kód egyszerűsítés
-- html text felület
 - html színes felület
 - html tologatós felület
 
