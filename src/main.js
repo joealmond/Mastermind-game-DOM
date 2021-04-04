@@ -1,28 +1,24 @@
 // Glaobal variables:
 
-const TURNS = 10;
-let actualTurns = TURNS;
 const secretCode = generateSecret();
-// const rowHeader = 1;
+
 const counterObj = {
+  // azért objektumban van az érték, hogy az referencia hivatkozás legyen
   counter: 1,
+  // ez a számláló a táblázat cellasorszámát tárolja
   add: function (increment = 1) {
+    // ez a metódus alapesetben egyel növeli a számlálót, de meglehet adni neki más értéket is
     this.counter = this.counter + increment;
     return this.counter;
   },
 };
 
 const gameStatus = {
+  // azért objektumban van az érték, hogy az referencia hivatkozás legyen
   isGameWon: false,
-  checkIfWon: function () {
-    if (this.isGameWon === true) return this.isGameWon;
-  },
 };
 
-// const digitsQuantity = 4;
-// const dispalyDigits = 2;
-// let tdActualCounter = 1;
-// let guessDigit;
+// Glaobal HTML variables:
 
 const inputForm = document.getElementById("inputForm");
 const inputField = document.getElementById("inputField");
@@ -57,68 +53,68 @@ function readGuess() {
   return guess.split("");
 }
 
-function writeGuess(guess) {
-  function getRedCount(guess) {
-    // Összeveti mely számjegyek vannak a helyén és visszaadja a találatok összegét.
-    let redCount = 0;
-    let i;
-    for (i = 0; i < 4; i++) {
-      if (secretCode[i] === guess[i]) {
-        redCount = redCount + 1;
-      }
+function getRedCount(guess) {
+  // Összeveti mely számjegyek vannak a helyén és visszaadja a találatok összegét.
+  let redCount = 0;
+  let i;
+  for (i = 0; i < 4; i++) {
+    if (secretCode[i] === guess[i]) {
+      redCount = redCount + 1;
     }
-    return redCount;
   }
+  return redCount;
+}
 
-  function getWhiteCount(guess) {
-    // Összevet hogy vannak-e olyan számok amelyek nincsenek a helyükön de előfordulnak.
-    // Minden számjegy csak egyszer szerepelhet, miközben a helyükön lévő számjegyek nem szerepelhetnek.
-    let whiteCount = 0;
-    let whiteCountHelper = new Set(); // egy halmazban tárolom átmenetileg az eredmény számokat.
-    let secretCodeHelper = secretCode.slice(); // a stringet tömb objektummá alakítom és mivel így már referencia érték ezét készítek egy másolatot, hogy az eredei érték ne módosuljon.
-    let guessHelper = guess.slice(); // a stringet tömb objektummá alakítom és mivel így már referencia érték ezét készítek egy másolatot, hogy az eredeti érték ne módosuljon.
-    let i, j;
-    for (i = 0; i < secretCodeHelper.length; ++i) {
-      // az egyásba ágyazott ciklusok gondoskodnak aról hogy a két tömb minden eleme össz elegyen vetve egymással.
+function getWhiteCount(guess) {
+  // Összevet hogy vannak-e olyan számok amelyek nincsenek a helyükön de előfordulnak.
+  // Minden számjegy csak egyszer szerepelhet, miközben a helyükön lévő számjegyek nem szerepelhetnek.
+  let whiteCount = 0;
+  let whiteCountHelper = new Set(); // egy halmazban tárolom átmenetileg az eredmény számokat.
+  let secretCodeHelper = secretCode.slice(); // a stringet tömb objektummá alakítom és mivel így már referencia érték ezét készítek egy másolatot, hogy az eredei érték ne módosuljon.
+  let guessHelper = guess.slice(); // a stringet tömb objektummá alakítom és mivel így már referencia érték ezét készítek egy másolatot, hogy az eredeti érték ne módosuljon.
+  let i, j;
+  for (i = 0; i < secretCodeHelper.length; ++i) {
+    // az egyásba ágyazott ciklusok gondoskodnak aról hogy a két tömb minden eleme össz elegyen vetve egymással.
+    if (i === j && secretCodeHelper[i] == guessHelper[j]) {
+      // ha találok helyi értéken egyezést akkor azt kiveszem a tömbökből.
+      secretCodeHelper.splice(i, 1);
+      guessHelper.splice(j, 1);
+      if (i >= 0) {
+        // mivel kivettem egy elemt a tömbökből az rövidebb lett, ezt kompenzálni kell vigyázva arra hogy az érték ne legyen negatív szám.
+        i = i - 1;
+      }
+    } else if (secretCodeHelper[i] === guessHelper[j]) {
+      whiteCountHelper.add(guess[j]);
+    }
+    for (j = 0; j < guessHelper.length; ++j) {
       if (i === j && secretCodeHelper[i] == guessHelper[j]) {
-        // ha találok helyi értéken egyezést akkor azt kiveszem a tömbökből.
         secretCodeHelper.splice(i, 1);
         guessHelper.splice(j, 1);
-        if (i >= 0) {
-          // mivel kivettem egy elemt a tömbökből az rövidebb lett, ezt kompenzálni kell vigyázva arra hogy az érték ne legyen negatív szám.
-          i = i - 1;
+        if (j >= 0) {
+          j = j - 1;
         }
       } else if (secretCodeHelper[i] === guessHelper[j]) {
         whiteCountHelper.add(guess[j]);
       }
-      for (j = 0; j < guessHelper.length; ++j) {
-        if (i === j && secretCodeHelper[i] == guessHelper[j]) {
-          secretCodeHelper.splice(i, 1);
-          guessHelper.splice(j, 1);
-          if (j >= 0) {
-            j = j - 1;
-          }
-        } else if (secretCodeHelper[i] === guessHelper[j]) {
-          whiteCountHelper.add(guess[j]);
-        }
-      }
     }
-
-    whiteCount = whiteCountHelper.size; // megnézem az eredményhalmaz méretét majd visszadom azt
-    return whiteCount;
   }
 
+  whiteCount = whiteCountHelper.size; // megnézem az eredményhalmaz méretét majd visszadom azt
+  return whiteCount;
+}
+
+function writeGuess(guess, redCount, whiteCount) {
+  // a HTML-be való kiírásért felelős függvény
   const tdActual = document.querySelectorAll("td");
   if (tdActual[counterObj.counter] !== undefined) {
     for (let i = 0; i < guess.length; i++) {
       tdActual[counterObj.counter].textContent = guess[i];
       counterObj.add();
     }
-    let redCount = getRedCount(guess);
     tdActual[counterObj.counter].textContent = redCount;
     counterObj.add();
-    tdActual[counterObj.counter].textContent = getWhiteCount(guess);
-    counterObj.add(2);
+    tdActual[counterObj.counter].textContent = whiteCount;
+    counterObj.add(2); // itt azért növelem kettővel az értéket mert a táblázat első sora sorfejléc
     if (redCount === 4) gameStatus.isGameWon = true;
   } else {
     gameStatusDisplay.textContent = `Nem nyertél! A titkos kód ${secretCode
@@ -139,13 +135,16 @@ inputForm.addEventListener(
     evt.preventDefault();
     let guess = readGuess();
     if (guess !== undefined) {
-      writeGuess(guess);
+      let redCount = getRedCount(guess);
+      let whiteCount = getWhiteCount(guess);
+      writeGuess(guess, redCount, whiteCount);
     }
     if (gameStatus.isGameWon === true) {
       gameStatusDisplay.textContent = `Nyertél! A titkos kód valóban ${secretCode
         .toString()
         .split(",")
         .join("")} volt.`;
+      document.getElementById("inputField").setAttribute("disabled", "");
     }
   },
   false
